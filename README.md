@@ -5,7 +5,7 @@ Integrantes:
 - Rodríguez Mariano Joaquín     DNI: 44350408 LU: 4849
 - Gallardo Matias Joaquín       DNI: 41401626 LU: 4159 
 - Guerrero Rocío de Los Ángeles DNI: 38653065 LU: 4305 
-- Valdez Florencia Noeli        DNI:40986430  LU: 4135 
+- Valdez Florencia Noeli        DNI: 40986430 LU: 4135 
 
 
 ## Instrucciones
