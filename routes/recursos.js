@@ -8,9 +8,9 @@ const {
 
 const router = Router();
 
-router.post('/recursos', crearRecurso);
-router.get('/recursos', obtenerRecursos);
-router.put('/recursos/:id', modificarRecurso);
-router.delete('/recursos/:id', eliminarRecurso);
+router.post('/', crearRecurso);
+router.get('/', obtenerRecursos);
+router.put('/:id', modificarRecurso);
+router.delete('/:id', eliminarRecurso);
 
 module.exports = router;

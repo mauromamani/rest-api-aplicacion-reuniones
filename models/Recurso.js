@@ -5,10 +5,6 @@ const RecursoSchema = Schema({
     type: String,
     required: true,
   },
-  recurso: {
-    type: String,
-    required: true,
-  },
   estaReservado: {
     type: Boolean,
     default: false,

@@ -4,7 +4,7 @@ const Recurso = require('../models/Recurso');
 /**
  * @method POST
  * @name crearRecurso
- * @body { nombre: string, recurso: string, estaReservado: boolean }
+ * @body { nombre: string, estaReservado: boolean }
  */
 const crearRecurso = async (req, res = response) => {
   const data = req.body;
@@ -29,14 +29,14 @@ const crearRecurso = async (req, res = response) => {
 /**
  * @method GET
  * @name obtenerRecursos
- * @query { estaOcupado: boolean }
+ * @query { estaReservado: boolean }
  */
 const obtenerRecursos = async (req, res = response) => {
-  const { estaOcupado } = req.query;
+  const { estaReservado } = req.query;
   let query = {};
 
-  if (estaOcupado) {
-    query.estaOcupado = estaOcupado;
+  if (estaReservado) {
+    query.estaReservado = estaReservado;
   }
 
   try {
@@ -58,7 +58,7 @@ const obtenerRecursos = async (req, res = response) => {
 /**
  * @method PUT
  * @name modificarRecurso
- * @body { nombre: string, recurso: string, estaReservado: boolean }
+ * @body { nombre: string, estaReservado: boolean }
  * @params { id: string }
  */
 const modificarRecurso = async (req, res = response) => {
