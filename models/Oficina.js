@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+
 const OficinaSchema = Schema({
   nombre: {
     type: String,
@@ -6,12 +7,13 @@ const OficinaSchema = Schema({
   },
   estaOcupada: {
     type: Boolean,
-    required: true,
+    default: false,
   },
   reunion: {
     type: Schema.Types.ObjectId,
     required: false,
     ref: 'Reunion',
   },
-})
+});
+
 module.exports = model('Oficina', OficinaSchema);
