@@ -13,6 +13,9 @@ connectMongo();
 app.use(express.json());
 app.use(cors());
 
+// routes
+app.use('/api/v1/recursos', require('./routes/recursos'));
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
