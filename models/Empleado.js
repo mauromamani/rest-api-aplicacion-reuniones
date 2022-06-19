@@ -18,6 +18,10 @@ const EmpleadoSchema = Schema({
     required: true,
     unique: true,
   },
+  clave: {
+    type: String,
+    required: true,
+  },
   rol: {
     type: String,
     required: true,
