@@ -40,6 +40,11 @@ const ReunionSchema = Schema({
     required: true,
     ref: 'TipoReunion',
   },
+  oficina: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: 'Oficina',
+  },
 });
 
 module.exports = model('Reunion', ReunionSchema);
