@@ -51,7 +51,7 @@ const obtenerEstados = async (req, res = response) => {
 /**
  * @method PUT
  * @name modificarEstado
- * @body {estado: string}
+ * @body {nombreEstado: string}
  * @params { id: string }
  */
 const modificarEstado = async (req, res = response) => {
