@@ -1,7 +1,7 @@
 const { Schema, model } = require('mongoose');
 
 const DependenciaSchema = Schema({
-  dependencia: {
+  tipo: {
     type: String,
     required: true,
   },
