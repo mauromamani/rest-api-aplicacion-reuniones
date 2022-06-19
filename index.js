@@ -14,6 +14,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(cors());
 
 // routes
+app.use('/api/v1/autenticacion', require('./routes/autenticacion'));
 app.use('/api/v1/empleados', require('./routes/empleados'));
 app.use('/api/v1/recursos', require('./routes/recursos'));
 app.use('/api/v1/recursos-digitales', require('./routes/recursosDigitales'));
