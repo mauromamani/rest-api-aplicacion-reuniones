@@ -11,6 +11,7 @@ const Dependencia = require('../models/Dependencia');
     legajo: string,
     email: string,
     clave: string,
+    estaEnReunion?: boolean,
     rol: ("PARTICIPANTE", "ADMINISTRADOR"),
     dependencias: Dependencia[]
    }
@@ -61,10 +62,18 @@ const crearEmpleado = async (req, res = response) => {
 /**
  * @method GET
  * @name obtenerEmpleados
+ * @query { estaEnReunion: boolean }
  */
 const obtenerEmpleados = async (req, res = response) => {
+  const { estaEnReunion } = req.query;
+  let query = {};
+
+  if (estaEnReunion) {
+    query.estaEnReunion = estaEnReunion;
+  }
+
   try {
-    const empleados = await Empleado.find().populate('dependencias');
+    const empleados = await Empleado.find(query).populate('dependencias');
 
     res.status(200).json({
       status: 200,
@@ -88,6 +97,7 @@ const obtenerEmpleados = async (req, res = response) => {
     legajo: string,
     email: string,
     clave: string,
+    estaEnReunion: boolean,
     rol: ("PARTICIPANTE", "ADMINISTRADOR"),
     dependencias: Dependencia[]
    }
@@ -99,19 +109,23 @@ const modificarEmpleado = async (req, res = response) => {
 
   try {
     // Verificar que las dependencias existen o que no este vacio
-    const dependencias = await Dependencia.find({
-      _id: { $in: data.dependencias },
-    });
-    if (dependencias.includes(null) || !dependencias.length) {
-      res.status(404).json({
-        status: 404,
-        message: 'dependencia no encontrada',
+    let dependencias;
+    if (data.dependencias) {
+      dependencias = await Dependencia.find({
+        _id: { $in: data.dependencias },
       });
-      return;
+
+      if (!dependencias.length) {
+        res.status(404).json({
+          status: 404,
+          message: 'dependencia no encontrada',
+        });
+        return;
+      }
     }
 
     // Verificar que el empleado no este registrado
-    empleado = await Empleado.findOne({ email: data.email });
+    let empleado = await Empleado.findOne({ email: data.email });
     if (empleado) {
       res.status(400).json({
         status: 400,
@@ -120,7 +134,8 @@ const modificarEmpleado = async (req, res = response) => {
       return;
     }
 
-    let empleado = await Empleado.findByIdAndUpdate(id, data);
+    data.dependencias = dependencias;
+    empleado = await Empleado.findByIdAndUpdate(id, data);
     if (!empleado) {
       res.status(404).json({
         status: 404,
