@@ -1,11 +1,10 @@
 const { response } = require('express');
 const Dependencia = require('../models/Dependencia');
 
-
 /**
  * @method POST
  * @name crearDependencia
- * @body {nombreEstado: string}
+ * @body { tipo: string }
  */
 const crearDependencia = async (req, res = response) => {
   const data = req.body;
@@ -16,7 +15,7 @@ const crearDependencia = async (req, res = response) => {
 
     res.status(201).json({
       status: 201,
-      message: 'Dependencia creada con exito',
+      message: 'dependencia creada con exito',
     });
   } catch (error) {
     console.log(error);
@@ -51,7 +50,7 @@ const obtenerDependencias = async (req, res = response) => {
 /**
  * @method PUT
  * @name modificarDependencia
- * @body {tipo: string}
+ * @body { tipo: string }
  * @params { id: string }
  */
 const modificarDependencia = async (req, res = response) => {
@@ -63,14 +62,14 @@ const modificarDependencia = async (req, res = response) => {
     if (!dependencia) {
       res.status(404).json({
         status: 404,
-        message: 'Dependencia no encontrada',
+        message: 'dependencia no encontrada',
       });
       return;
     }
 
     res.status(200).json({
       status: 200,
-      message: 'Dependencia modificada con exito',
+      message: 'dependencia modificada con exito',
     });
   } catch (error) {
     console.log(error);
@@ -94,7 +93,7 @@ const eliminarDependencia = async (req, res = response) => {
     if (!dependencia) {
       res.status(404).json({
         status: 404,
-        message: 'estado no encontrado',
+        message: 'dependencia no encontrada',
       });
       return;
     }

@@ -9,7 +9,9 @@ const Empleado = require('../models/Empleado');
 const iniciarSesion = async (req, res = response) => {
   const data = req.body;
   try {
-    const empleado = await Empleado.findOne({ email: data.email });
+    const empleado = await Empleado.findOne({ email: data.email }).populate(
+      'dependencias'
+    );
     if (!empleado) {
       res.status(401).json({
         status: 401,

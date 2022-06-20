@@ -4,7 +4,7 @@ const Oficina = require('../models/Oficina');
 /**
  * @method POST
  * @name crearOficina
- * @body {nombre: string, estaOcupada: Boolean}
+ * @body { nombre: string, estaOcupada?: boolean }
  */
 const crearOficina = async (req, res = response) => {
   const data = req.body;
@@ -15,7 +15,7 @@ const crearOficina = async (req, res = response) => {
 
     res.status(201).json({
       status: 201,
-      message: 'Oficina creada con exito',
+      message: 'oficina creada con exito',
     });
   } catch (error) {
     console.log(error);
@@ -58,7 +58,7 @@ const obtenerOficinas = async (req, res = response) => {
 /**
  * @method PUT
  * @name modificarOficina
- * @body { nombre: string, estaOcupada: boolean, reunion: ReunionID}
+ * @body { nombre: string, estaOcupada: boolean, reunion: ReunionID }
  * @params { id: string }
  */
 const modificarOficina = async (req, res = response) => {
