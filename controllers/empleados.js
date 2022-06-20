@@ -23,10 +23,10 @@ const crearEmpleado = async (req, res = response) => {
     const dependencias = await Dependencia.find({
       _id: { $in: data.dependencias },
     });
-    if (dependencias.includes(null) || !dependencias.length) {
+    if (!dependencias.length) {
       res.status(404).json({
         status: 404,
-        message: 'dependencia no encontrada',
+        message: 'dependencias no pueden estar vacias ',
       });
       return;
     }
@@ -41,6 +41,7 @@ const crearEmpleado = async (req, res = response) => {
       return;
     }
 
+    data.dependencias = dependencias;
     const nuevoEmpleado = new Empleado(data);
     await nuevoEmpleado.save();
 
@@ -63,7 +64,7 @@ const crearEmpleado = async (req, res = response) => {
  */
 const obtenerEmpleados = async (req, res = response) => {
   try {
-    const empleados = await Empleado.find();
+    const empleados = await Empleado.find().populate('dependencias');
 
     res.status(200).json({
       status: 200,

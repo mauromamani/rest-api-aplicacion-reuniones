@@ -4,7 +4,7 @@ const TipoReunion = require('../models/TipoReunion');
 /**
  * @method POST
  * @name crearTipoReunion
- * @body {tipoReunion: string}
+ * @body { tipoReunion: string }
  */
 const crearTipoReunion = async (req, res = response) => {
   const data = req.body;
@@ -15,7 +15,7 @@ const crearTipoReunion = async (req, res = response) => {
 
     res.status(201).json({
       status: 201,
-      message: 'Tipo de Reunion creado con exito',
+      message: 'tipo de reunion creado con exito',
     });
   } catch (error) {
     console.log(error);
@@ -50,7 +50,7 @@ const obtenerTiposReunion = async (req, res = response) => {
 /**
  * @method PUT
  * @name modificarTipoReunion
- * @body {tipoReunion: string}
+ * @body { tipoReunion: string }
  * @params { id: string }
  */
 const modificarTipoReunion = async (req, res = response) => {
@@ -102,7 +102,7 @@ const eliminarTipoReunion = async (req, res = response) => {
 
     res.status(200).json({
       status: 200,
-      message: 'Tipo de Reunion eliminado con exito',
+      message: 'tipo de reunion eliminado con exito',
     });
   } catch (error) {
     console.log(error);

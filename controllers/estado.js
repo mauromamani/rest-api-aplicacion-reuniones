@@ -1,11 +1,10 @@
 const { response } = require('express');
 const Estado = require('../models/Estado');
 
-
 /**
  * @method POST
  * @name crearEstado
- * @body {nombreEstado: string}
+ * @body { nombreEstado: string }
  */
 const crearEstado = async (req, res = response) => {
   const data = req.body;
@@ -16,7 +15,7 @@ const crearEstado = async (req, res = response) => {
 
     res.status(201).json({
       status: 201,
-      message: 'Estado creado con exito',
+      message: 'estado creado con exito',
     });
   } catch (error) {
     console.log(error);
@@ -51,7 +50,7 @@ const obtenerEstados = async (req, res = response) => {
 /**
  * @method PUT
  * @name modificarEstado
- * @body {nombreEstado: string}
+ * @body { nombreEstado: string }
  * @params { id: string }
  */
 const modificarEstado = async (req, res = response) => {

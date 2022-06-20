@@ -16,6 +16,10 @@ app.use(cors());
 // routes
 app.use('/api/v1/autenticacion', require('./routes/autenticacion'));
 app.use('/api/v1/empleados', require('./routes/empleados'));
+app.use('/api/v1/dependencias', require('./routes/dependencia'));
+app.use('/api/v1/estados', require('./routes/estado'));
+app.use('/api/v1/oficinas', require('./routes/oficina'));
+app.use('/api/v1/tipo-reunion', require('./routes/tipoReunion'));
 app.use('/api/v1/recursos', require('./routes/recursos'));
 app.use('/api/v1/recursos-digitales', require('./routes/recursosDigitales'));
 
