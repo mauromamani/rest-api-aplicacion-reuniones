@@ -124,18 +124,8 @@ const modificarEmpleado = async (req, res = response) => {
       }
     }
 
-    // Verificar que el empleado no este registrado
-    let empleado = await Empleado.findOne({ email: data.email });
-    if (empleado) {
-      res.status(400).json({
-        status: 400,
-        message: 'el empleado ya esta registrado',
-      });
-      return;
-    }
-
     data.dependencias = dependencias;
-    empleado = await Empleado.findByIdAndUpdate(id, data);
+    const empleado = await Empleado.findByIdAndUpdate(id, data);
     if (!empleado) {
       res.status(404).json({
         status: 404,
@@ -149,7 +139,14 @@ const modificarEmpleado = async (req, res = response) => {
       message: 'empleado modificado con exito',
     });
   } catch (error) {
-    console.log(error);
+    if (error.message.includes('duplicate key')) {
+      res.status(400).json({
+        status: 400,
+        message: 'un empleado con ese email ya está registrado',
+      });
+      return;
+    }
+
     res.status(500).json({
       status: 500,
       message: 'internal server error',
