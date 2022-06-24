@@ -20,7 +20,7 @@ PORT=
 # Cadena de conexion de mongo
 MONGO_URI=
 # Firma del jwt
-SECRET_SEED
+SECRET_JWT_SEED=
 ```
 
 ### Iniciar en modo desarrollador

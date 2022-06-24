@@ -6,7 +6,7 @@ const generarJWT = (uid) => {
 
     jwt.sign(
       payload,
-      process.env.SECRET_SEED || 'palabra-secreta',
+      process.env.SECRET_JWT_SEED || 'palabra-secreta',
       {
         expiresIn: '1h',
       },
