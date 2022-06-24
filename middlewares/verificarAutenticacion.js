@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const autenticacion = (req, res, next) => {
+const verificarAutenticacion = (req, res, next) => {
   const token = req.header('x-token');
 
   if (!token) {
@@ -24,4 +24,4 @@ const autenticacion = (req, res, next) => {
   }
 };
 
-module.exports = { autenticacion };
+module.exports = { verificarAutenticacion };
