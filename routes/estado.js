@@ -5,11 +5,23 @@ const {
   obtenerEstados,
   eliminarEstado,
 } = require('../controllers/estado');
+const {
+  verificarAutenticacion,
+} = require('../middlewares/verificarAutenticacion');
+const { verificarPermisos } = require('../middlewares/verificarPermisos');
 const router = Router();
 
-router.post('/', crearEstado);
+router.post('/', [verificarAutenticacion, verificarPermisos], crearEstado);
 router.get('/', obtenerEstados);
-router.put('/:id', modificarEstado);
-router.delete('/:id', eliminarEstado);
+router.put(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  modificarEstado
+);
+router.delete(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  eliminarEstado
+);
 
 module.exports = router;

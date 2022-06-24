@@ -5,12 +5,28 @@ const {
   modificarRecursoDigital,
   eliminarRecursoDigital,
 } = require('../controllers/recursosDigitales');
+const {
+  verificarAutenticacion,
+} = require('../middlewares/verificarAutenticacion');
+const { verificarPermisos } = require('../middlewares/verificarPermisos');
 
 const router = Router();
 
-router.post('/', crearRecursoDigital);
+router.post(
+  '/',
+  [verificarAutenticacion, verificarPermisos],
+  crearRecursoDigital
+);
 router.get('/', obtenerRecursosDigitales);
-router.put('/:id', modificarRecursoDigital);
-router.delete('/:id', eliminarRecursoDigital);
+router.put(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  modificarRecursoDigital
+);
+router.delete(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  eliminarRecursoDigital
+);
 
 module.exports = router;

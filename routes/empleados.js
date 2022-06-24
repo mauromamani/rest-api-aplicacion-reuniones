@@ -5,12 +5,24 @@ const {
   modificarEmpleado,
   eliminarEmpleado,
 } = require('../controllers/empleados');
+const {
+  verificarAutenticacion,
+} = require('../middlewares/verificarAutenticacion');
+const { verificarPermisos } = require('../middlewares/verificarPermisos');
 
 const router = Router();
 
-router.post('/', crearEmpleado);
-router.get('/', obtenerEmpleados);
-router.put('/:id', modificarEmpleado);
-router.delete('/:id', eliminarEmpleado);
+router.post('/', [verificarAutenticacion, verificarPermisos], crearEmpleado);
+router.get('/', [verificarAutenticacion, verificarPermisos], obtenerEmpleados);
+router.put(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  modificarEmpleado
+);
+router.delete(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  eliminarEmpleado
+);
 
 module.exports = router;
