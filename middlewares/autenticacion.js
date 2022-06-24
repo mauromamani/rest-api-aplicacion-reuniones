@@ -19,7 +19,7 @@ const autenticacion = (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       status: 401,
-      message: 'ooken no valido',
+      message: 'token no valido',
     });
   }
 };
