@@ -89,6 +89,37 @@ const obtenerEmpleados = async (req, res = response) => {
 };
 
 /**
+ * @method GET
+ * @name obtenerEmpleadoPorId
+ * @params { id: string }
+ */
+const obtenerEmpleadoPorId = async (req, res = response) => {
+  const { id } = req.params;
+
+  try {
+    const empleado = await Empleado.findById(id).populate('dependencias');
+    if (!empleado) {
+      res.status(404).json({
+        status: 404,
+        message: 'empleado no encontrado',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: 200,
+      data: { empleado },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      message: 'internal server error',
+    });
+  }
+};
+
+/**
  * @method PUT
  * @name modificarEmpleado
  * @body { 
@@ -188,6 +219,7 @@ const eliminarEmpleado = async (req, res = response) => {
 module.exports = {
   crearEmpleado,
   obtenerEmpleados,
+  obtenerEmpleadoPorId,
   modificarEmpleado,
   eliminarEmpleado,
 };
