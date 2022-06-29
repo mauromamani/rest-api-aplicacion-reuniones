@@ -293,7 +293,9 @@ const confirmarReunion = async (req, res = response) => {
       });
     }
 
-    const empleados = await Empleado.find({ _id: { $in: reunion.empleados } });
+    const empleados = await Empleado.find({
+      _id: { $in: reunion.participantes },
+    });
 
     // creamos un arreglo de notificaciones: { empleado: empleadoId, reunion: reunionId }
     let notificaciones = empleados.map((empleado) => ({
@@ -302,7 +304,7 @@ const confirmarReunion = async (req, res = response) => {
     }));
 
     // guardamos en una sola instancia el arreglo de notificaciones
-    notificaciones = await Notificacion.create(notificaciones);
+    await Notificacion.create(notificaciones);
 
     // realizar envio de mensajes
     res.status(200).json({
