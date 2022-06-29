@@ -15,7 +15,9 @@ const obtenerNotificaciones = async (req, res = response) => {
   }
 
   try {
-    const notificaciones = await Notificacion.find(query);
+    const notificaciones = await Notificacion.find(query)
+      .populate('empleado')
+      .populate('reunion');
 
     res.status(200).json({
       status: 200,
@@ -38,7 +40,9 @@ const obtenerNotificacionPorId = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const notificacion = await Notificacion.findById(id);
+    const notificacion = await Notificacion.findById(id)
+      .populate('empleado')
+      .populate('reunion');
     if (!notificacion) {
       return res.status(404).json({
         status: 404,
