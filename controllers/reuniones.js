@@ -285,11 +285,20 @@ const confirmarReunion = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const reunion = await Reunion.findById(id);
+    const reunion = await Reunion.findByIdAndUpdate(id, {
+      reunionConfirmada: true,
+    });
     if (!reunion) {
       return res.status(404).json({
         status: 404,
         message: 'reunion no encontrada',
+      });
+    }
+
+    if (reunion.reunionConfirmada) {
+      return res.status(400).json({
+        status: 400,
+        message: 'reunion esta confirmada',
       });
     }
 

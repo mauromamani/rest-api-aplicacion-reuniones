@@ -54,6 +54,10 @@ const ReunionSchema = Schema({
     type: Boolean,
     default: false,
   },
+  reunionConfirmada: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = model('Reunion', ReunionSchema);
