@@ -87,7 +87,6 @@ const obtenerReuniones = async (req, res = response) => {
       .populate('participantes')
       .populate('recursos')
       .populate('recursosDigitales')
-      .populate('prioridad')
       .populate('tipoReunion')
       .populate('oficina')
       .populate('estado');
@@ -118,7 +117,6 @@ const obtenerReunionPorId = async (req, res = response) => {
       .populate('participantes')
       .populate('recursos')
       .populate('recursosDigitales')
-      .populate('prioridad')
       .populate('tipoReunion')
       .populate('oficina')
       .populate('estado');
