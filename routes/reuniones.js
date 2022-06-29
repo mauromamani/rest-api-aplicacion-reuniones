@@ -11,7 +11,7 @@ const {
 const router = Router();
 
 router.post('/', crearReunion);
-router.post('/confirmar', confirmarReunion);
+router.post('/confirmar/:id', confirmarReunion);
 router.get('/', obtenerReuniones);
 router.get('/:id', obtenerReunionPorId);
 router.put('/:id', modificarReunion);
