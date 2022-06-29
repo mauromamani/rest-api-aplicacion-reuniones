@@ -5,11 +5,13 @@ const {
   eliminarReunion,
   obtenerReuniones,
   obtenerReunionPorId,
+  confirmarReunion,
 } = require('../controllers/reuniones');
 
 const router = Router();
 
 router.post('/', crearReunion);
+router.post('/confirmar', confirmarReunion);
 router.get('/', obtenerReuniones);
 router.get('/:id', obtenerReunionPorId);
 router.put('/:id', modificarReunion);

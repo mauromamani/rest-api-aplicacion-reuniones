@@ -3,6 +3,7 @@ const Reunion = require('../models/Reunion');
 const Recurso = require('../models/Recurso');
 const Empleado = require('../models/Empleado');
 const Oficina = require('../models/Oficina');
+const Notificacion = require('../models/Notificacion');
 
 /**
  * @method POST
@@ -277,10 +278,53 @@ const eliminarReunion = async (req, res = response) => {
   }
 };
 
+/**
+ * @method POST
+ * @name confirmarReunion
+ * @params { id: string }
+ */
+const confirmarReunion = async (req, res = response) => {
+  const { id } = req.params;
+
+  try {
+    const reunion = await Reunion.findById(id);
+    if (!reunion) {
+      return res.status(404).json({
+        status: 404,
+        message: 'reunion no encontrada',
+      });
+    }
+
+    const empleados = await Empleado.find({ _id: { $in: reunion.empleados } });
+
+    // creamos un arreglo de notificaciones: { empleado: empleadoId, reunion: reunionId }
+    let notificaciones = empleados.map((empleado) => ({
+      empleado: empleado._id,
+      reunion: reunion._id,
+    }));
+
+    // guardamos en una sola instancia el arreglo de notificaciones
+    notificaciones = await Notificacion.create(notificaciones);
+
+    // realizar envio de mensajes
+    res.status(200).json({
+      status: 200,
+      message: 'la reunion fue confirmada',
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      message: 'internal server error',
+    });
+  }
+};
+
 module.exports = {
   crearReunion,
   modificarReunion,
   obtenerReuniones,
   obtenerReunionPorId,
   eliminarReunion,
+  confirmarReunion,
 };
