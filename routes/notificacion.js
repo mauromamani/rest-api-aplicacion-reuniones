@@ -1,15 +1,11 @@
 const { Router } = require('express');
 const {
-  crearNotificacion,
-  modificarNotificacion,
   obtenerNotificaciones,
-  eliminarNotificacion,
-} = require('../controllers/notificacion');
+  obtenerNotificacionPorId,
+} = require('../controllers/notificaciones');
 const router = Router();
 
-router.post('/', crearNotificacion);
 router.get('/', obtenerNotificaciones);
-router.put('/:id', modificarNotificacion);
-router.delete('/:id', eliminarNotificacion);
+router.get('/:id', obtenerNotificacionPorId);
 
 module.exports = router;
