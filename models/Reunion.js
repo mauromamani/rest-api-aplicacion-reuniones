@@ -45,6 +45,15 @@ const ReunionSchema = Schema({
     required: true,
     ref: 'Oficina',
   },
+  estado: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: 'Estado',
+  },
+  estaDeshabilitada: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = model('Reunion', ReunionSchema);
