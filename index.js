@@ -24,6 +24,7 @@ app.use('/api/v1/notificaciones', require('./routes/notificacion'));
 app.use('/api/v1/tipo-reunion', require('./routes/tipoReunion'));
 app.use('/api/v1/recursos', require('./routes/recursos'));
 app.use('/api/v1/recursos-digitales', require('./routes/recursosDigitales'));
+app.use('/api/v1/prioridades', require('./routes/prioridad'));
 
 const PORT = process.env.PORT || 3000;
 
