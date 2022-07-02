@@ -89,7 +89,8 @@ const obtenerReuniones = async (req, res = response) => {
       .populate('recursosDigitales')
       .populate('tipoReunion')
       .populate('oficina')
-      .populate('estado');
+      .populate('estado')
+      .populate('prioridad');
 
     res.status(200).json({
       status: 200,
@@ -119,7 +120,9 @@ const obtenerReunionPorId = async (req, res = response) => {
       .populate('recursosDigitales')
       .populate('tipoReunion')
       .populate('oficina')
-      .populate('estado');
+      .populate('estado')
+      .populate('prioridad');
+
     if (!reunion) {
       return res.status(404).json({
         status: 404,

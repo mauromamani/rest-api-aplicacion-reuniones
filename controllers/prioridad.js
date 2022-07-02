@@ -8,6 +8,7 @@ const Prioridad = require('../models/Prioridad');
  */
 const crearPrioridad = async (req, res = response) => {
   const data = req.body;
+  data.tipoPrioridad = data.tipoPrioridad.toUpperCase().trim();
 
   try {
     const nuevaPrioridad = new Prioridad(data);
@@ -58,7 +59,7 @@ const modificarPrioridad = async (req, res = response) => {
   const { _id, ...data } = req.body;
 
   try {
-    const prioridad = await Prioridad.findByIdAndUpdate(_id, data);
+    const prioridad = await Prioridad.findByIdAndUpdate(id, data);
     if (!prioridad) {
       res.status(404).json({
         status: 404,
