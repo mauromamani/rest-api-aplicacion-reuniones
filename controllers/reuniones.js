@@ -36,15 +36,28 @@ const crearReunion = async (req, res = response) => {
     }
 
     // cambiar el estado de la oficina ocupada
-    const oficina = await Oficina.findByIdAndUpdate(data.oficina, {
-      estaOcupada: true,
-    });
+    const oficina = await Oficina.findById(data.oficina);
     if (!oficina) {
       return res.status(404).json({
         status: 404,
         message: 'oficina no encontrada',
       });
     }
+
+    // verificar que la oficina no este ocupada
+    if (oficina.estaOcupada) {
+      return res.status(400).json({
+        status: 400,
+        message: 'oficina esta ocupada',
+      });
+    }
+
+    // agregamos datos a oficina
+    oficina.estaOcupada = true;
+    oficina.reunion = nuevaReunion._id;
+    oficina.historialDeReuniones.push(nuevaReunion._id);
+
+    await oficina.save();
 
     // cambiar el estado de los participantes
     if (!!data.participantes.length) {
@@ -203,7 +216,7 @@ const modificarReunion = async (req, res = response) => {
       );
     }
 
-    // TODO: Cambiar el estado de la oficina ocupada
+    // cmbiar el estado de la oficina ocupada
     await Oficina.findByIdAndUpdate(data.oficina, { estaOcupada: true });
 
     // cambiar el estado de los participantes
