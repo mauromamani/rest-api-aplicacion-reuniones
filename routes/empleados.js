@@ -14,12 +14,8 @@ const { verificarPermisos } = require('../middlewares/verificarPermisos');
 const router = Router();
 
 router.post('/', [verificarAutenticacion, verificarPermisos], crearEmpleado);
-router.get('/', [verificarAutenticacion, verificarPermisos], obtenerEmpleados);
-router.get(
-  '/:id',
-  [verificarAutenticacion, verificarPermisos],
-  obtenerEmpleadoPorId
-);
+router.get('/', [verificarAutenticacion], obtenerEmpleados);
+router.get('/:id', [verificarAutenticacion], obtenerEmpleadoPorId);
 router.put(
   '/:id',
   [verificarAutenticacion, verificarPermisos],

@@ -7,14 +7,30 @@ const {
   obtenerReunionPorId,
   confirmarReunion,
 } = require('../controllers/reuniones');
+const {
+  verificarAutenticacion,
+} = require('../middlewares/verificarAutenticacion');
+const { verificarPermisos } = require('../middlewares/verificarPermisos');
 
 const router = Router();
 
-router.post('/', crearReunion);
-router.post('/confirmar/:id', confirmarReunion);
+router.post('/', [verificarAutenticacion, verificarPermisos], crearReunion);
+router.post(
+  '/confirmar/:id',
+  [everificarAutenticacion, verificarPermisos],
+  confirmarReunion
+);
 router.get('/', obtenerReuniones);
 router.get('/:id', obtenerReunionPorId);
-router.put('/:id', modificarReunion);
-router.delete('/:id', eliminarReunion);
+router.put(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  modificarReunion
+);
+router.delete(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  eliminarReunion
+);
 
 module.exports = router;
