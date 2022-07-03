@@ -19,6 +19,8 @@ Integrantes:
 PORT=
 # Cadena de conexion de mongo
 MONGO_URI=
+# Firma del jwt
+SECRET_JWT_SEED=
 ```
 
 ### Iniciar en modo desarrollador
