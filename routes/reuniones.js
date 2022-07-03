@@ -17,7 +17,7 @@ const router = Router();
 router.post('/', [verificarAutenticacion, verificarPermisos], crearReunion);
 router.post(
   '/confirmar/:id',
-  [everificarAutenticacion, verificarPermisos],
+  [verificarAutenticacion, verificarPermisos],
   confirmarReunion
 );
 router.get('/', obtenerReuniones);
