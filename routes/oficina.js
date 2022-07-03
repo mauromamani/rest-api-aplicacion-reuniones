@@ -5,11 +5,23 @@ const {
   obtenerOficinas,
   eliminarOficina,
 } = require('../controllers/oficina');
+const {
+  verificarAutenticacion,
+} = require('../middlewares/verificarAutenticacion');
+const { verificarPermisos } = require('../middlewares/verificarPermisos');
 const router = Router();
 
-router.post('/', crearOficina);
+router.post('/', [verificarAutenticacion, verificarPermisos], crearOficina);
 router.get('/', obtenerOficinas);
-router.put('/:id', modificarOficina);
-router.delete('/:id', eliminarOficina);
+router.put(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  modificarOficina
+);
+router.delete(
+  '/:id',
+  [verificarAutenticacion, verificarPermisos],
+  eliminarOficina
+);
 
 module.exports = router;

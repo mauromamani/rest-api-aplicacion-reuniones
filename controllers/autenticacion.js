@@ -1,5 +1,6 @@
 const { response } = require('express');
 const Empleado = require('../models/Empleado');
+const { generarJWT } = require('../utils/jwt');
 
 /**
  * @method POST
@@ -28,9 +29,11 @@ const iniciarSesion = async (req, res = response) => {
       return;
     }
 
+    const token = await generarJWT(empleado._id);
+
     res.status(200).json({
       status: 200,
-      data: { empleado },
+      data: { empleado, token },
     });
   } catch (error) {
     console.log(error);
