@@ -4,7 +4,7 @@ const Recurso = require('../models/Recurso');
 const Empleado = require('../models/Empleado');
 const Oficina = require('../models/Oficina');
 const Notificacion = require('../models/Notificacion');
-
+const emailer = require('../utils/emailer');
 /**
  * @method POST
  * @name crearReunion
@@ -303,7 +303,7 @@ const confirmarReunion = async (req, res = response) => {
   try {
     const reunion = await Reunion.findByIdAndUpdate(id, {
       reunionConfirmada: true,
-    });
+    }).populate('tipoReunion').populate('oficina').populate('prioridad');
     if (!reunion) {
       return res.status(404).json({
         status: 404,
@@ -327,6 +327,12 @@ const confirmarReunion = async (req, res = response) => {
       empleado: empleado._id,
       reunion: reunion._id,
     }));
+    //guardamos los emails de los empleados en un array para luego mandar
+    //los correos
+    let emails = [];
+    empleados.forEach((empleado) => {
+      emails.push(empleado.email)
+    });
 
     // guardamos en una sola instancia el arreglo de notificaciones
     await Notificacion.create(notificaciones);
@@ -336,6 +342,9 @@ const confirmarReunion = async (req, res = response) => {
       status: 200,
       message: 'la reunion fue confirmada',
     });
+    //acá va mandar el correo 
+    emailer.sendEmail(emails, reunion);
+
   } catch (error) {
     console.log(error);
     res.status(500).json({
