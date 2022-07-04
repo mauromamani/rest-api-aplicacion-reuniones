@@ -14,6 +14,13 @@ const OficinaSchema = Schema({
     required: false,
     ref: 'Reunion',
   },
+  reunionesActivas: [
+    {
+      type: Schema.Types.ObjectId,
+      required: false,
+      ref: 'Reunion',
+    },
+  ],
   historialDeReuniones: [
     {
       type: Schema.Types.ObjectId,

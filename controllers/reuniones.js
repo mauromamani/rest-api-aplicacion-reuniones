@@ -45,17 +45,48 @@ const crearReunion = async (req, res = response) => {
     }
 
     // verificar que la oficina no este ocupada
-    if (oficina.estaOcupada) {
-      return res.status(400).json({
-        status: 400,
-        message: 'oficina esta ocupada',
+    // if (oficina.estaOcupada) {
+    //   return res.status(400).json({
+    //     status: 400,
+    //     message: 'oficina esta ocupada',
+    //   });
+    // }
+
+    // agregamos datos a oficina
+    //oficina.estaOcupada = true;
+
+    const reunionesActivas = await Reunion.find({
+      _id: { $in: oficina.reunionesActivas },
+    });
+
+    // verificar que no se encuentran fechas
+    const reunionHoraInicio = new Date(nuevaReunion.horaInicio).getTime();
+
+    let existeColision = false;
+    if (!!reunionesActivas.length) {
+      reunionesActivas.forEach((r) => {
+        const rHoraInicio = new Date(r.horaInicio).getTime();
+        const rHoraFinal = new Date(r.horaFinal).getTime();
+
+        if (
+          reunionHoraInicio >= rHoraInicio &&
+          reunionHoraInicio <= rHoraFinal
+        ) {
+          existeColision = true;
+        }
       });
     }
 
-    // agregamos datos a oficina
-    oficina.estaOcupada = true;
+    if (existeColision) {
+      return res.status(400).json({
+        status: 400,
+        message: 'existe una reunion en ese horario',
+      });
+    }
+
     oficina.reunion = nuevaReunion._id;
     oficina.historialDeReuniones.push(nuevaReunion._id);
+    oficina.reunionesActivas.push(nuevaReunion._id);
 
     await oficina.save();
 
@@ -269,7 +300,11 @@ const eliminarReunion = async (req, res = response) => {
     }
 
     // cambiar el estado de la oficina ocupada
-    await Oficina.findByIdAndUpdate(reunion.oficina, { estaOcupada: false });
+    const oficina = await Oficina.findById(reunion.oficina);
+    oficina.reunionesActivas = oficina.reunionesActivas.filter(
+      (r) => r._id != reunion._id
+    );
+    await oficina.save();
 
     // cambiar el estado de los participantes
     if (!!reunion.participantes.length) {
@@ -303,7 +338,10 @@ const confirmarReunion = async (req, res = response) => {
   try {
     const reunion = await Reunion.findByIdAndUpdate(id, {
       reunionConfirmada: true,
-    }).populate('tipoReunion').populate('oficina').populate('prioridad');
+    })
+      .populate('tipoReunion')
+      .populate('oficina')
+      .populate('prioridad');
     if (!reunion) {
       return res.status(404).json({
         status: 404,
@@ -331,7 +369,7 @@ const confirmarReunion = async (req, res = response) => {
     //los correos
     let emails = [];
     empleados.forEach((empleado) => {
-      emails.push(empleado.email)
+      emails.push(empleado.email);
     });
 
     // guardamos en una sola instancia el arreglo de notificaciones
@@ -342,9 +380,8 @@ const confirmarReunion = async (req, res = response) => {
       status: 200,
       message: 'la reunion fue confirmada',
     });
-    //acá va mandar el correo 
+    //acá va mandar el correo
     emailer.sendEmail(emails, reunion);
-
   } catch (error) {
     console.log(error);
     res.status(500).json({
