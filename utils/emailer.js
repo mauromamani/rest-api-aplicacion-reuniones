@@ -1,6 +1,5 @@
 const nodemailer = require('nodemailer');
 const nodeMailerSendgrid = require('nodemailer-sendgrid');
-const formateDate = require('./formatDate');
 const createTrans = () => {
   const transport = nodemailer.createTransport(
     nodeMailerSendgrid({
