@@ -56,7 +56,42 @@ const obtenerOficinas = async (req, res = response) => {
     });
   }
 };
+/**
+ * @method GET
+ * @name obtenerEstadisticasOficinas
+ * @query { estaOcupada: boolean }
+ */
+ const obtenerEstadisticasOficinas = async (req, res = response) => {
+  const { estaOcupada } = req.query;
+  let query = {};
 
+  if (estaOcupada) {
+    query.estaOcupada = estaOcupada;
+  }
+
+  try {
+    const oficinas = (await Oficina.find(query)
+      .populate('reunion')
+      .populate('historialDeReuniones')).map(x=>( {"nombre":x["nombre"],"historialDeReuniones":x["historialDeReuniones"]
+      .reduce((r, { horaInicio }) => {
+        let key = horaInicio.toISOString().slice(0, 7);
+        r[key] = (r[key] || 0) + 1;
+        return r;
+    }, {})}));
+  
+
+    res.status(200).json({
+      status: 200,
+      data: { oficinas },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      message: 'internal server error',
+    });
+  }
+};
 /**
  * @method PUT
  * @name modificarOficina
@@ -127,5 +162,8 @@ module.exports = {
   crearOficina,
   modificarOficina,
   obtenerOficinas,
+  obtenerEstadisticasOficinas,
   eliminarOficina,
+  
+
 };
