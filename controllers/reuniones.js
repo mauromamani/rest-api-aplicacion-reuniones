@@ -66,13 +66,29 @@ const crearReunion = async (req, res = response) => {
     const reunionHoraFinal = new Date(nuevaReunion.horaFinal).getTime();
 
     // verificar que la hora de inicio no sea mayor a hora de final
-    verificarHoraFinal(reunionHoraInicio, reunionHoraFinal, res);
+    if (reunionHoraInicio > reunionHoraFinal) {
+      res.status(400).json({
+        status: 400,
+        message: 'la hora de inicio no puede ser mayor a la hora de final',
+      });
+      return;
+    }
 
     // verificar que la reunion no sea a la misma hora
-    verificarHorasIguales(reunionHoraInicio, reunionHoraFinal, res);
+    if (reunionHoraInicio === reunionHoraFinal) {
+      return res.status(400).json({
+        status: 400,
+        message: 'las reuniones no pueden comenzar y terminar al mismo tiempo',
+      });
+    }
 
     // verificar que la reunion no sea de menos de 30 minutos
-    verificarReunionCorta(reunionHoraInicio, reunionHoraFinal, res);
+    if (reunionHoraFinal - reunionHoraInicio < 1800000) {
+      return res.status(400).json({
+        status: 400,
+        message: 'las reuniones deben durar al menos 30 minutos',
+      });
+    }
 
     // si existen reuniones activas en la oficina vamos a verificar
     // que no existan colisiones entre horarios
@@ -294,6 +310,35 @@ const modificarReunion = async (req, res = response) => {
 
     // buscamos la prioridad mandada en el body
     const { tipoPrioridad } = await Prioridad.findById(data.prioridad);
+
+    // se transforma a milisegundos a las fechas de inicio y final de la nueva reunion
+    const reunionHoraInicio = new Date(data.horaInicio).getTime();
+    const reunionHoraFinal = new Date(data.horaFinal).getTime();
+
+    // verificar que la hora de inicio no sea mayor a hora de final
+    if (reunionHoraInicio > reunionHoraFinal) {
+      res.status(400).json({
+        status: 400,
+        message: 'la hora de inicio no puede ser mayor a la hora de final',
+      });
+      return;
+    }
+
+    // verificar que la reunion no sea a la misma hora
+    if (reunionHoraInicio === reunionHoraFinal) {
+      return res.status(400).json({
+        status: 400,
+        message: 'las reuniones no pueden comenzar y terminar al mismo tiempo',
+      });
+    }
+
+    // verificar que la reunion no sea de menos de 30 minutos
+    if (reunionHoraFinal - reunionHoraInicio < 1800000) {
+      return res.status(400).json({
+        status: 400,
+        message: 'las reuniones deben durar al menos 30 minutos',
+      });
+    }
 
     return res.json({
       reunionesActivas,
