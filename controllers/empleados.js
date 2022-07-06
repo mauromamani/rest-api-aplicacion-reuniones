@@ -11,7 +11,6 @@ const Dependencia = require('../models/Dependencia');
     legajo: string,
     email: string,
     clave: string,
-    estaEnReunion?: boolean,
     rol: ("PARTICIPANTE", "ADMINISTRADOR"),
     dependencias: Dependencia[]
    }
@@ -62,18 +61,10 @@ const crearEmpleado = async (req, res = response) => {
 /**
  * @method GET
  * @name obtenerEmpleados
- * @query { estaEnReunion: boolean }
  */
 const obtenerEmpleados = async (req, res = response) => {
-  const { estaEnReunion } = req.query;
-  let query = {};
-
-  if (estaEnReunion) {
-    query.estaEnReunion = estaEnReunion;
-  }
-
   try {
-    const empleados = await Empleado.find(query).populate('dependencias');
+    const empleados = await Empleado.find().populate('dependencias');
 
     res.status(200).json({
       status: 200,
@@ -128,7 +119,6 @@ const obtenerEmpleadoPorId = async (req, res = response) => {
     legajo: string,
     email: string,
     clave: string,
-    estaEnReunion: boolean,
     rol: ("PARTICIPANTE", "ADMINISTRADOR"),
     dependencias: Dependencia[]
    }

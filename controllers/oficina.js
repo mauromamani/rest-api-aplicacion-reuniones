@@ -41,7 +41,7 @@ const obtenerOficinas = async (req, res = response) => {
 
   try {
     const oficinas = await Oficina.find(query)
-      .populate('reunion')
+      .populate('reunionesActivas')
       .populate('historialDeReuniones');
 
     res.status(200).json({

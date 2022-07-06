@@ -1,10 +1,18 @@
 const { response } = require('express');
 const Reunion = require('../models/Reunion');
 const Recurso = require('../models/Recurso');
+const Prioridad = require('../models/Prioridad');
 const Empleado = require('../models/Empleado');
 const Oficina = require('../models/Oficina');
 const Notificacion = require('../models/Notificacion');
 const emailer = require('../utils/emailer');
+const {
+  verificarHoraFinal,
+  verificarHorasIguales,
+  verificarReunionCorta,
+  verificarFechaActual,
+} = require('../validators/reuniones');
+
 /**
  * @method POST
  * @name crearReunion
@@ -25,17 +33,17 @@ const crearReunion = async (req, res = response) => {
   const data = req.body;
 
   try {
-    const nuevaReunion = new Reunion(data);
+    let nuevaReunion = new Reunion(data);
 
-    // cambiar el estado de los recursos ocupados
-    if (!!data.recursos.length) {
-      await Recurso.updateMany(
-        { _id: { $in: data.recursos } },
-        { $set: { estaReservado: true } }
-      );
-    }
+    // TODO: La lógica acá no sirve
+    // if (!!data.recursos.length) {
+    //   await Recurso.updateMany(
+    //     { _id: { $in: data.recursos } },
+    //     { $set: { estaReservado: true } }
+    //   );
+    // }
 
-    // cambiar el estado de la oficina ocupada
+    // verificar que la oficina exista
     const oficina = await Oficina.findById(data.oficina);
     if (!oficina) {
       return res.status(404).json({
@@ -44,59 +52,113 @@ const crearReunion = async (req, res = response) => {
       });
     }
 
-    // verificar que la oficina no este ocupada
-    // if (oficina.estaOcupada) {
-    //   return res.status(400).json({
-    //     status: 400,
-    //     message: 'oficina esta ocupada',
-    //   });
-    // }
-
-    // agregamos datos a oficina
-    //oficina.estaOcupada = true;
-
-    const reunionesActivas = await Reunion.find({
+    // buscamos las reuniones activas a partir de la oficina seleccionada
+    let reunionesActivas = await Reunion.find({
       _id: { $in: oficina.reunionesActivas },
-    });
+    }).populate('prioridad');
 
-    // verificar que no se encuentran fechas
+    // vamos la prioridad de la nueva reunion, y si es ALTA podemos sustituir a una reunion
+    nuevaReunion = await nuevaReunion.populate('prioridad');
+    const nuevaReunionPrioridad = nuevaReunion.prioridad.tipoPrioridad;
+
+    // se transforma a milisegundos a las fechas de inicio y final de la nueva reunion
     const reunionHoraInicio = new Date(nuevaReunion.horaInicio).getTime();
+    const reunionHoraFinal = new Date(nuevaReunion.horaFinal).getTime();
 
+    // verificar que la hora de inicio no sea mayor a hora de final
+    verificarHoraFinal(reunionHoraInicio, reunionHoraFinal, res);
+
+    // verificar que la reunion no sea a la misma hora
+    verificarHorasIguales(reunionHoraInicio, reunionHoraFinal, res);
+
+    // verificar que la reunion no sea de menos de 30 minutos
+    verificarReunionCorta(reunionHoraInicio, reunionHoraFinal, res);
+
+    // si existen reuniones activas en la oficina vamos a verificar
+    // que no existan colisiones entre horarios
     let existeColision = false;
+    let fueReprogramada = false;
+    let reunionQueColisiona = null;
     if (!!reunionesActivas.length) {
       reunionesActivas.forEach((r) => {
-        const rHoraInicio = new Date(r.horaInicio).getTime();
+        // convertimos a milisegundos de horaInicio y horaFinal de CADA elemento de reunionesActivas
+        const rHoraInicio = new Date(r.horaInicio).getTime(); // le asignamos 10 minutos de ventaja
         const rHoraFinal = new Date(r.horaFinal).getTime();
 
+        // vamos a verificar que "reunionHoraInicio" no sea igual o este entre los rangos
+        // de fecha de CADA elemento de reunionesActivas
         if (
           reunionHoraInicio >= rHoraInicio &&
           reunionHoraInicio <= rHoraFinal
         ) {
+          // si la prioridad de la nueva reunion es ALTA podemos reprogramar una reunion;
+          if (
+            nuevaReunionPrioridad === 'ALTA' &&
+            r.prioridad.tipoPrioridad !== 'ALTA'
+          ) {
+            fueReprogramada = true;
+            reunionQueColisiona = r;
+            return;
+          }
+
           existeColision = true;
+          reunionQueColisiona = r;
+          return;
         }
       });
     }
 
-    if (existeColision) {
-      return res.status(400).json({
-        status: 400,
-        message: 'existe una reunion en ese horario',
+    // AGREGAR ESTADO PENDIENTE
+
+    // si la reunion es de prioridad alta
+    if (fueReprogramada) {
+      oficina.reunionesActivas.push(nuevaReunion._id);
+      // eliminamos a la reunion para reprogramar de reunionesActivas
+      oficina.reunionesActivas = oficina.reunionesActivas.filter(
+        (r) => r._id.toString() !== reunionQueColisiona._id.toString()
+      );
+      oficina.historialDeReuniones.push(nuevaReunion._id);
+
+      await oficina.save();
+
+      await nuevaReunion.save();
+
+      // ENVIAR MENSAJE DE REPROGRAMACION
+
+      return res.status(200).json({
+        status: 200,
+        message:
+          'reunion fue creada con exito. La siguiente reunion tendra que ser reprogramada',
+        reunionReprogramada: reunionQueColisiona,
       });
     }
 
-    oficina.reunion = nuevaReunion._id;
+    // existe una colision de fechas
+    if (existeColision) {
+      reunionQueColisiona = await Reunion.findById(reunionQueColisiona._id)
+        .populate('tipoReunion')
+        .populate('estado')
+        .populate('prioridad');
+
+      return res.status(400).json({
+        status: 400,
+        message: 'existe una reunion en ese rango de horario',
+        reunionQueColisiona,
+      });
+    }
+
     oficina.historialDeReuniones.push(nuevaReunion._id);
     oficina.reunionesActivas.push(nuevaReunion._id);
 
     await oficina.save();
 
-    // cambiar el estado de los participantes
-    if (!!data.participantes.length) {
-      await Empleado.updateMany(
-        { _id: { $in: data.participantes } },
-        { $set: { estaEnReunion: true } }
-      );
-    }
+    // TODO: la logica acá no sirve
+    // if (!!data.participantes.length) {
+    //   await Empleado.updateMany(
+    //     { _id: { $in: data.participantes } },
+    //     { $set: { estaEnReunion: true } }
+    //   );
+    // }
 
     await nuevaReunion.save();
 
@@ -208,8 +270,7 @@ const modificarReunion = async (req, res = response) => {
   const { _id, ...data } = req.body;
 
   try {
-    // TODO: Mejorar logica
-    const reunion = await Reunion.findById(id);
+    let reunion = await Reunion.findById(id);
     if (!reunion) {
       return res.status(404).json({
         status: 404,
@@ -217,46 +278,38 @@ const modificarReunion = async (req, res = response) => {
       });
     }
 
-    // reestablecemos estados de recursos
-    if (!!reunion.recursos.length) {
-      await Recurso.updateMany(
-        { _id: { $in: reunion.recursos } },
-        { $set: { estaReservado: false } }
-      );
+    // verificar que la oficina exista
+    const oficina = await Oficina.findById(reunion.oficina);
+    if (!oficina) {
+      return res.status(404).json({
+        status: 404,
+        message: 'oficina no encontrada',
+      });
     }
 
-    // reestablecemos estados de participantes
-    if (!!reunion.participantres.length) {
-      await Empleado.updateMany(
-        { _id: { $in: reunion.participantres } },
-        { $set: { estaEnReunion: false } }
-      );
-    }
+    // buscamos las reuniones activas a partir de la oficina seleccionada
+    let reunionesActivas = await Reunion.find({
+      _id: { $in: oficina.reunionesActivas },
+    }).populate('prioridad');
 
-    // reestablecemos estado de oficina
-    await Oficina.findByIdAndUpdate(reunion.oficina, { estaOcupada: false });
+    // buscamos la prioridad mandada en el body
+    const { tipoPrioridad } = await Prioridad.findById(data.prioridad);
+
+    return res.json({
+      reunionesActivas,
+      tipoPrioridad,
+    });
+
+    // validar reunion
 
     // modificar la reunion y cambiar los estados
     await Reunion.findByIdAndUpdate(id, data);
 
     // cambiar el estado de los recursos ocupados
-    if (!!data.recursos.length) {
-      await Recurso.updateMany(
-        { _id: { $in: data.recursos } },
-        { $set: { estaReservado: true } }
-      );
-    }
 
     // cmbiar el estado de la oficina ocupada
-    await Oficina.findByIdAndUpdate(data.oficina, { estaOcupada: true });
 
-    // cambiar el estado de los participantes
-    if (!!data.participantes.length) {
-      await Empleado.updateMany(
-        { _id: { $in: data.participantes } },
-        { $set: { estaEnReunion: true } }
-      );
-    }
+    // cambiar la logica de los participantes
 
     res.status(201).json({
       status: 201,

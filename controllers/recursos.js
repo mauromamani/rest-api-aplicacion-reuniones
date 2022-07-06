@@ -29,18 +29,10 @@ const crearRecurso = async (req, res = response) => {
 /**
  * @method GET
  * @name obtenerRecursos
- * @query { estaReservado: boolean }
  */
 const obtenerRecursos = async (req, res = response) => {
-  const { estaReservado } = req.query;
-  let query = {};
-
-  if (estaReservado) {
-    query.estaReservado = estaReservado;
-  }
-
   try {
-    const recursos = await Recurso.find(query);
+    const recursos = await Recurso.find();
 
     res.status(200).json({
       status: 200,
@@ -58,7 +50,7 @@ const obtenerRecursos = async (req, res = response) => {
 /**
  * @method PUT
  * @name modificarRecurso
- * @body { nombre: string, estaReservado: boolean }
+ * @body { nombre: string }
  * @params { id: string }
  */
 const modificarRecurso = async (req, res = response) => {

@@ -5,10 +5,6 @@ const RecursoSchema = Schema({
     type: String,
     required: true,
   },
-  estaReservado: {
-    type: Boolean,
-    default: false,
-  },
 });
 
 module.exports = model('Recurso', RecursoSchema);
