@@ -7,6 +7,7 @@ const Empleado = require('../models/Empleado');
 const Oficina = require('../models/Oficina');
 const Notificacion = require('../models/Notificacion');
 const emailer = require('../utils/emailer');
+const { default: mongoose } = require('mongoose');
 
 /**
  * @method POST
@@ -207,7 +208,7 @@ const crearReunion = async (req, res = response) => {
  * @query { estaDeshabilitada: boolean, estado: Estado, oficina: Oficina, participantes: Participante[], legajo: number }
  */
 const obtenerReuniones = async (req, res = response) => {
-  const {
+  let {
     estaDeshabilitada,
     estado,
     oficina,
@@ -235,6 +236,13 @@ const obtenerReuniones = async (req, res = response) => {
     query.horaFinal = { $lt: horaFinal };
   }
 
+  if (participantes) {
+    participantes = JSON.parse(participantes);
+    participantes = participantes.map((p) => mongoose.Types.ObjectId(p));
+
+    query.participantes = { $in: participantes };
+  }
+
   try {
     let reuniones = await Reunion.find(query)
       .populate('participantes')
@@ -244,6 +252,12 @@ const obtenerReuniones = async (req, res = response) => {
       .populate('oficina')
       .populate('estado')
       .populate('prioridad');
+
+    if (legajo) {
+      reuniones = reuniones.filter((r) =>
+        r.participantes.find((p) => p.legajo === legajo)
+      );
+    }
 
     res.status(200).json({
       status: 200,
