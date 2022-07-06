@@ -29,6 +29,7 @@ const crearReunion = async (req, res = response) => {
   try {
     let nuevaReunion = new Reunion(data);
 
+    // TODO: Asignar estado por defecto
     // TODO: La lógica acá no sirve
     // if (!!data.recursos.length) {
     //   await Recurso.updateMany(
@@ -289,13 +290,15 @@ const modificarReunion = async (req, res = response) => {
     }
 
     // verificar que la oficina exista
-    const oficina = await Oficina.findById(reunion.oficina);
+    const oficina = await Oficina.findById(data.oficina);
     if (!oficina) {
       return res.status(404).json({
         status: 404,
         message: 'oficina no encontrada',
       });
     }
+
+    // si las oficinas son distintas cambiar reunionesActivas
 
     // buscamos las reuniones activas a partir de la oficina seleccionada
     let reunionesActivas = await Reunion.find({
@@ -366,16 +369,17 @@ const modificarReunion = async (req, res = response) => {
       });
     }
 
+    // validar reunion
+
+    // modificar la reunion y cambiar los estados
+    const resulado = await Reunion.findByIdAndUpdate(id, data);
+
     return res.json({
       existeColision,
       fueReprogramada,
       reunionQueColisiona,
+      resulado,
     });
-
-    // validar reunion
-
-    // modificar la reunion y cambiar los estados
-    await Reunion.findByIdAndUpdate(id, data);
 
     // cambiar el estado de los recursos ocupados
 
@@ -404,7 +408,7 @@ const modificarReunion = async (req, res = response) => {
  */
 const eliminarReunion = async (req, res = response) => {
   const { id } = req.params;
-
+  // PENDIENTE - A REPROGRAMAR
   try {
     const reunion = await Reunion.findByIdAndUpdate(id, {
       estaDeshabilitada: true,
@@ -459,7 +463,7 @@ const eliminarReunion = async (req, res = response) => {
  */
 const confirmarReunion = async (req, res = response) => {
   const { id } = req.params;
-
+  // ESTADO: Proceso
   try {
     const reunion = await Reunion.findByIdAndUpdate(id, {
       reunionConfirmada: true,
@@ -481,6 +485,7 @@ const confirmarReunion = async (req, res = response) => {
       });
     }
 
+    // validar que existan empleados
     const empleados = await Empleado.find({
       _id: { $in: reunion.participantes },
     });
@@ -500,13 +505,14 @@ const confirmarReunion = async (req, res = response) => {
     // guardamos en una sola instancia el arreglo de notificaciones
     await Notificacion.create(notificaciones);
 
+    //acá va mandar el correo
+    emailer.sendEmail(emails, reunion);
+
     // realizar envio de mensajes
     res.status(200).json({
       status: 200,
       message: 'la reunion fue confirmada',
     });
-    //acá va mandar el correo
-    emailer.sendEmail(emails, reunion);
   } catch (error) {
     console.log(error);
     res.status(500).json({

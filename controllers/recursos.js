@@ -89,7 +89,7 @@ const eliminarRecurso = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const recurso = await Recurso.findById(id);
+    const recurso = await Recurso.findByIdAndDelete(id);
     if (!recurso) {
       res.status(404).json({
         status: 404,
@@ -97,8 +97,6 @@ const eliminarRecurso = async (req, res = response) => {
       });
       return;
     }
-
-    await Recurso.deleteOne({ id });
 
     res.status(200).json({
       status: 200,
