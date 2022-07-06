@@ -1,6 +1,7 @@
 const { response } = require('express');
 const Reunion = require('../models/Reunion');
 const Recurso = require('../models/Recurso');
+const Estado = require('../models/Estado');
 const Prioridad = require('../models/Prioridad');
 const Empleado = require('../models/Empleado');
 const Oficina = require('../models/Oficina');
@@ -27,7 +28,12 @@ const crearReunion = async (req, res = response) => {
   const data = req.body;
 
   try {
+    const estadoPendiente = await Estado.findOne({
+      nombreEstado: { $regex: 'Pendiente', $options: 'i' },
+    });
+
     let nuevaReunion = new Reunion(data);
+    nuevaReunion.estado = estadoPendiente._id;
 
     // TODO: Asignar estado por defecto
     // TODO: La lógica acá no sirve
@@ -77,11 +83,11 @@ const crearReunion = async (req, res = response) => {
       });
     }
 
-    // verificar que la reunion no sea de menos de 30 minutos
-    if (reunionHoraFinal - reunionHoraInicio < 1800000) {
+    // verificar que la reunion no sea de menos de 15 minutos
+    if (reunionHoraFinal - reunionHoraInicio < 900000) {
       return res.status(400).json({
         status: 400,
-        message: 'las reuniones deben durar al menos 30 minutos',
+        message: 'las reuniones deben durar al menos 15 minutos',
       });
     }
 
@@ -96,11 +102,15 @@ const crearReunion = async (req, res = response) => {
         const rHoraInicio = new Date(r.horaInicio).getTime(); // le asignamos 10 minutos de ventaja
         const rHoraFinal = new Date(r.horaFinal).getTime();
 
+        const rDiferencia = rHoraFinal - rHoraInicio;
+
         // vamos a verificar que "reunionHoraInicio" no sea igual o este entre los rangos
         // de fecha de CADA elemento de reunionesActivas
         if (
-          reunionHoraInicio >= rHoraInicio &&
-          reunionHoraInicio <= rHoraFinal
+          (reunionHoraInicio >= rHoraInicio &&
+            reunionHoraInicio <= rHoraFinal) ||
+          (reunionHoraFinal >= rHoraInicio && reunionHoraFinal <= rHoraFinal) ||
+          (rHoraInicio >= reunionHoraInicio && rHoraInicio <= reunionHoraFinal)
         ) {
           // si la prioridad de la nueva reunion es ALTA podemos reprogramar una reunion;
           if (
@@ -118,8 +128,6 @@ const crearReunion = async (req, res = response) => {
         }
       });
     }
-
-    // AGREGAR ESTADO PENDIENTE
 
     // si la reunion es de prioridad alta
     if (fueReprogramada) {
@@ -270,10 +278,10 @@ const obtenerReunionPorId = async (req, res = response) => {
     participantes?: Empleado[],
     recursos?: Recurso[],
     recursosDigitales?: RecursoDigital[],
-    estaEnReunion?: boolean,
     prioridad?: Prioridad
     tipoReunion?: TipoReunion
     oficina?: Oficina
+    estado?: Estado
    }
  */
 const modificarReunion = async (req, res = response) => {
@@ -297,8 +305,6 @@ const modificarReunion = async (req, res = response) => {
         message: 'oficina no encontrada',
       });
     }
-
-    // si las oficinas son distintas cambiar reunionesActivas
 
     // buscamos las reuniones activas a partir de la oficina seleccionada
     let reunionesActivas = await Reunion.find({
@@ -329,17 +335,23 @@ const modificarReunion = async (req, res = response) => {
       });
     }
 
-    // verificar que la reunion no sea de menos de 30 minutos
-    if (reunionHoraFinal - reunionHoraInicio < 1800000) {
+    // verificar que la reunion no sea de menos de 15 minutos
+    if (reunionHoraFinal - reunionHoraInicio < 900000) {
       return res.status(400).json({
         status: 400,
-        message: 'las reuniones deben durar al menos 30 minutos',
+        message: 'las reuniones deben durar al menos 15 minutos',
       });
     }
 
     let existeColision = false;
     let fueReprogramada = false;
     let reunionQueColisiona = null;
+
+    // quitamos la reunion del arreglo para evitar problemas de colision de fechas
+    reunionesActivas = reunionesActivas.filter(
+      (r) => r._id.toString() != reunion._id.toString()
+    );
+
     if (!!reunionesActivas.length) {
       reunionesActivas.forEach((r) => {
         // convertimos a milisegundos de horaInicio y horaFinal de CADA elemento de reunionesActivas
@@ -349,8 +361,10 @@ const modificarReunion = async (req, res = response) => {
         // vamos a verificar que "reunionHoraInicio" no sea igual o este entre los rangos
         // de fecha de CADA elemento de reunionesActivas
         if (
-          reunionHoraInicio >= rHoraInicio &&
-          reunionHoraInicio <= rHoraFinal
+          (reunionHoraInicio >= rHoraInicio &&
+            reunionHoraInicio <= rHoraFinal) ||
+          (reunionHoraFinal >= rHoraInicio && reunionHoraFinal <= rHoraFinal) ||
+          (rHoraInicio >= reunionHoraInicio && rHoraInicio <= reunionHoraFinal)
         ) {
           // si la prioridad de la nueva reunion es ALTA podemos reprogramar una reunion;
           if (
@@ -369,27 +383,69 @@ const modificarReunion = async (req, res = response) => {
       });
     }
 
-    // validar reunion
+    // existe una colision de fechas
+    if (existeColision) {
+      reunionQueColisiona = await Reunion.findById(reunionQueColisiona._id)
+        .populate('tipoReunion')
+        .populate('estado')
+        .populate('prioridad');
+
+      return res.status(400).json({
+        status: 400,
+        message: 'existe una reunion en ese rango de horario',
+        reunionQueColisiona,
+      });
+    }
+
+    // si las oficinas son distintas cambiar el lugar de reunionesActivas
+    if (data.oficina.toString() !== reunion.oficina.toString()) {
+      oficina.reunionesActivas.push(reunion._id);
+      oficina.historialDeReuniones.push(reunion._id);
+
+      // buscamos la oficina antigua y sacamos la reunion de reuniones activas y su historial
+      const oficinaVieja = await Oficina.findById(reunion.oficina);
+      oficinaVieja.reunionesActivas = oficinaVieja.reunionesActivas.filter(
+        (r) => r._id.toString() !== reunion._id.toString()
+      );
+      oficinaVieja.historialDeReuniones =
+        oficinaVieja.historialDeReuniones.filter(
+          (r) => r._id.toString() !== reunion._id.toString()
+        );
+
+      await oficinaVieja.save();
+      await oficina.save();
+    }
+
+    // si la reunion es de prioridad alta
+    if (fueReprogramada) {
+      oficina.reunionesActivas.push(reunion._id);
+      // eliminamos a la reunion para reprogramar de reunionesActivas
+      oficina.reunionesActivas = oficina.reunionesActivas.filter(
+        (r) => r._id.toString() !== reunionQueColisiona._id.toString()
+      );
+      oficina.historialDeReuniones.push(reunion._id);
+
+      await oficina.save();
+
+      await reunion.save();
+
+      // ENVIAR MENSAJE DE REPROGRAMACION
+
+      return res.status(200).json({
+        status: 200,
+        message:
+          'reunion fue creada con exito. La siguiente reunion tendra que ser reprogramada',
+        reunionReprogramada: reunionQueColisiona,
+      });
+    }
 
     // modificar la reunion y cambiar los estados
     const resulado = await Reunion.findByIdAndUpdate(id, data);
 
-    return res.json({
-      existeColision,
-      fueReprogramada,
-      reunionQueColisiona,
-      resulado,
-    });
-
-    // cambiar el estado de los recursos ocupados
-
-    // cmbiar el estado de la oficina ocupada
-
-    // cambiar la logica de los participantes
-
     res.status(201).json({
       status: 201,
       message: 'reunion modificada con exito',
+      resulado,
     });
   } catch (error) {
     console.log(error);
@@ -408,10 +464,14 @@ const modificarReunion = async (req, res = response) => {
  */
 const eliminarReunion = async (req, res = response) => {
   const { id } = req.params;
-  // PENDIENTE - A REPROGRAMAR
   try {
+    const estadoDeshabilitada = await Estado.findOne({
+      nombreEstado: { $regex: 'Deshabilitada', $options: 'i' },
+    });
+
     const reunion = await Reunion.findByIdAndUpdate(id, {
       estaDeshabilitada: true,
+      estado: estadoDeshabilitada._id,
     });
     if (!reunion) {
       return res.status(404).json({
@@ -463,10 +523,15 @@ const eliminarReunion = async (req, res = response) => {
  */
 const confirmarReunion = async (req, res = response) => {
   const { id } = req.params;
-  // ESTADO: Proceso
+
   try {
+    const estadoEnProceso = await Estado.findOne({
+      nombreEstado: { $regex: 'En Proceso', $options: 'i' },
+    });
+
     const reunion = await Reunion.findByIdAndUpdate(id, {
       reunionConfirmada: true,
+      estado: estadoEnProceso._id,
     })
       .populate('tipoReunion')
       .populate('oficina')
