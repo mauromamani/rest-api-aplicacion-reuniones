@@ -29,18 +29,10 @@ const crearRecurso = async (req, res = response) => {
 /**
  * @method GET
  * @name obtenerRecursos
- * @query { estaReservado: boolean }
  */
 const obtenerRecursos = async (req, res = response) => {
-  const { estaReservado } = req.query;
-  let query = {};
-
-  if (estaReservado) {
-    query.estaReservado = estaReservado;
-  }
-
   try {
-    const recursos = await Recurso.find(query);
+    const recursos = await Recurso.find();
 
     res.status(200).json({
       status: 200,
@@ -58,7 +50,7 @@ const obtenerRecursos = async (req, res = response) => {
 /**
  * @method PUT
  * @name modificarRecurso
- * @body { nombre: string, estaReservado: boolean }
+ * @body { nombre: string }
  * @params { id: string }
  */
 const modificarRecurso = async (req, res = response) => {
@@ -97,7 +89,7 @@ const eliminarRecurso = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const recurso = await Recurso.findById(id);
+    const recurso = await Recurso.findByIdAndDelete(id);
     if (!recurso) {
       res.status(404).json({
         status: 404,
@@ -105,8 +97,6 @@ const eliminarRecurso = async (req, res = response) => {
       });
       return;
     }
-
-    await Recurso.deleteOne({ id });
 
     res.status(200).json({
       status: 200,

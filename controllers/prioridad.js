@@ -90,7 +90,7 @@ const eliminarPrioridad = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const prioridad = await Prioridad.findById(id);
+    const prioridad = await Prioridad.findByIdAndDelete(id);
     if (!prioridad) {
       res.status(404).json({
         status: 404,
@@ -98,8 +98,6 @@ const eliminarPrioridad = async (req, res = response) => {
       });
       return;
     }
-
-    await Prioridad.deleteOne({ id });
 
     res.status(200).json({
       status: 200,

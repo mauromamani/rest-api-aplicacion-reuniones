@@ -22,10 +22,6 @@ const EmpleadoSchema = Schema({
     type: String,
     required: true,
   },
-  estaEnReunion: {
-    type: Boolean,
-    default: false,
-  },
   rol: {
     type: String,
     required: true,
