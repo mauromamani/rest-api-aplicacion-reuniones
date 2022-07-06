@@ -6,12 +6,6 @@ const Empleado = require('../models/Empleado');
 const Oficina = require('../models/Oficina');
 const Notificacion = require('../models/Notificacion');
 const emailer = require('../utils/emailer');
-const {
-  verificarHoraFinal,
-  verificarHorasIguales,
-  verificarReunionCorta,
-  verificarFechaActual,
-} = require('../validators/reuniones');
 
 /**
  * @method POST
@@ -340,9 +334,42 @@ const modificarReunion = async (req, res = response) => {
       });
     }
 
+    let existeColision = false;
+    let fueReprogramada = false;
+    let reunionQueColisiona = null;
+    if (!!reunionesActivas.length) {
+      reunionesActivas.forEach((r) => {
+        // convertimos a milisegundos de horaInicio y horaFinal de CADA elemento de reunionesActivas
+        const rHoraInicio = new Date(r.horaInicio).getTime(); // le asignamos 10 minutos de ventaja
+        const rHoraFinal = new Date(r.horaFinal).getTime();
+
+        // vamos a verificar que "reunionHoraInicio" no sea igual o este entre los rangos
+        // de fecha de CADA elemento de reunionesActivas
+        if (
+          reunionHoraInicio >= rHoraInicio &&
+          reunionHoraInicio <= rHoraFinal
+        ) {
+          // si la prioridad de la nueva reunion es ALTA podemos reprogramar una reunion;
+          if (
+            tipoPrioridad === 'ALTA' &&
+            r.prioridad.tipoPrioridad !== 'ALTA'
+          ) {
+            fueReprogramada = true;
+            reunionQueColisiona = r;
+            return;
+          }
+
+          existeColision = true;
+          reunionQueColisiona = r;
+          return;
+        }
+      });
+    }
+
     return res.json({
-      reunionesActivas,
-      tipoPrioridad,
+      existeColision,
+      fueReprogramada,
+      reunionQueColisiona,
     });
 
     // validar reunion
