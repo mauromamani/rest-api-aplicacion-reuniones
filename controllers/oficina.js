@@ -59,26 +59,22 @@ const obtenerOficinas = async (req, res = response) => {
 /**
  * @method GET
  * @name obtenerEstadisticasOficinas
- * @query { estaOcupada: boolean }
  */
- const obtenerEstadisticasOficinas = async (req, res = response) => {
-  const { estaOcupada } = req.query;
-  let query = {};
-
-  if (estaOcupada) {
-    query.estaOcupada = estaOcupada;
-  }
-
+const obtenerEstadisticasOficinas = async (req, res = response) => {
   try {
-    const oficinas = (await Oficina.find(query)
-      .populate('reunion')
-      .populate('historialDeReuniones')).map(x=>( {"nombre":x["nombre"],"historialDeReuniones":x["historialDeReuniones"]
-      .reduce((r, { horaInicio }) => {
-        let key = horaInicio.toISOString().slice(0, 7);
-        r[key] = (r[key] || 0) + 1;
-        return r;
-    }, {})}));
-  
+    const oficinas = (
+      await Oficina.find().populate('reunion').populate('historialDeReuniones')
+    ).map((x) => ({
+      nombre: x['nombre'],
+      historialDeReuniones: x['historialDeReuniones'].reduce(
+        (r, { horaInicio }) => {
+          let key = horaInicio.toISOString().slice(0, 7);
+          r[key] = (r[key] || 0) + 1;
+          return r;
+        },
+        {}
+      ),
+    }));
 
     res.status(200).json({
       status: 200,
@@ -162,6 +158,4 @@ module.exports = {
   obtenerOficinas,
   obtenerEstadisticasOficinas,
   eliminarOficina,
-  
-
 };

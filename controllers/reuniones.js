@@ -204,10 +204,18 @@ const crearReunion = async (req, res = response) => {
 /**
  * @method GET
  * @name obtenerReuniones
- * @query { estaDeshabilitada: boolean, estado: Estado }
+ * @query { estaDeshabilitada: boolean, estado: Estado, oficina: Oficina, participantes: Participante[], legajo: number }
  */
 const obtenerReuniones = async (req, res = response) => {
-  const { estaDeshabilitada, estado } = req.query;
+  const {
+    estaDeshabilitada,
+    estado,
+    oficina,
+    horaInicio,
+    horaFinal,
+    participantes,
+    legajo,
+  } = req.query;
   let query = {};
 
   if (estaDeshabilitada) {
@@ -218,8 +226,17 @@ const obtenerReuniones = async (req, res = response) => {
     query.estado = estado;
   }
 
+  if (oficina) {
+    query.oficina = oficina;
+  }
+
+  if (horaInicio && horaFinal) {
+    query.horaInicio = { $gte: horaInicio };
+    query.horaFinal = { $lt: horaFinal };
+  }
+
   try {
-    const reuniones = await Reunion.find(query)
+    let reuniones = await Reunion.find(query)
       .populate('participantes')
       .populate('recursos')
       .populate('recursosDigitales')
