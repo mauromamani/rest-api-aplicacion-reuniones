@@ -102,8 +102,6 @@ const crearReunion = async (req, res = response) => {
         const rHoraInicio = new Date(r.horaInicio).getTime(); // le asignamos 10 minutos de ventaja
         const rHoraFinal = new Date(r.horaFinal).getTime();
 
-        const rDiferencia = rHoraFinal - rHoraInicio;
-
         // vamos a verificar que "reunionHoraInicio" no sea igual o este entre los rangos
         // de fecha de CADA elemento de reunionesActivas
         if (
@@ -131,6 +129,15 @@ const crearReunion = async (req, res = response) => {
 
     // si la reunion es de prioridad alta
     if (fueReprogramada) {
+      const estadoSuspendida = await Estado.findOne({
+        nombreEstado: { $regex: 'Suspendida', $options: 'i' },
+      });
+
+      reunionQueColisiona = await Reunion.findByIdAndUpdate(
+        reunionQueColisiona._id,
+        { estado: estadoSuspendida._id }
+      );
+
       oficina.reunionesActivas.push(nuevaReunion._id);
       // eliminamos a la reunion para reprogramar de reunionesActivas
       oficina.reunionesActivas = oficina.reunionesActivas.filter(
@@ -197,14 +204,18 @@ const crearReunion = async (req, res = response) => {
 /**
  * @method GET
  * @name obtenerReuniones
- * @query { estaDeshabilitada: boolean }
+ * @query { estaDeshabilitada: boolean, estado: Estado }
  */
 const obtenerReuniones = async (req, res = response) => {
-  const { estaDeshabilitada } = req.query;
+  const { estaDeshabilitada, estado } = req.query;
   let query = {};
 
   if (estaDeshabilitada) {
     query.estaDeshabilitada = estaDeshabilitada;
+  }
+
+  if (estado) {
+    query.estado = estado;
   }
 
   try {
@@ -418,6 +429,15 @@ const modificarReunion = async (req, res = response) => {
 
     // si la reunion es de prioridad alta
     if (fueReprogramada) {
+      const estadoSuspendida = await Estado.findOne({
+        nombreEstado: { $regex: 'Suspendida', $options: 'i' },
+      });
+
+      reunionQueColisiona = await Reunion.findByIdAndUpdate(
+        reunionQueColisiona._id,
+        { estado: estadoSuspendida._id }
+      );
+
       oficina.reunionesActivas.push(reunion._id);
       // eliminamos a la reunion para reprogramar de reunionesActivas
       oficina.reunionesActivas = oficina.reunionesActivas.filter(
