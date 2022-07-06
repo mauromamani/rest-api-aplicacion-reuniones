@@ -89,7 +89,7 @@ const eliminarTipoReunion = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const tipoReunion = await TipoReunion.findById(id);
+    const tipoReunion = await TipoReunion.findByIdAndDelete(id);
     if (!tipoReunion) {
       res.status(404).json({
         status: 404,
@@ -97,8 +97,6 @@ const eliminarTipoReunion = async (req, res = response) => {
       });
       return;
     }
-
-    await TipoReunion.deleteOne({ id });
 
     res.status(200).json({
       status: 200,

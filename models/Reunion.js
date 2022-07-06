@@ -47,7 +47,7 @@ const ReunionSchema = Schema({
   },
   estado: {
     type: Schema.Types.ObjectId,
-    required: true,
+    required: false,
     ref: 'Estado',
   },
   estaDeshabilitada: {

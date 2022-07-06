@@ -89,7 +89,7 @@ const eliminarEstado = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const estado = await Estado.findById(id);
+    const estado = await Estado.findByIdAndDelete(id);
     if (!estado) {
       res.status(404).json({
         status: 404,
@@ -97,8 +97,6 @@ const eliminarEstado = async (req, res = response) => {
       });
       return;
     }
-
-    await Estado.deleteOne({ id });
 
     res.status(200).json({
       status: 200,

@@ -41,7 +41,7 @@ const obtenerOficinas = async (req, res = response) => {
 
   try {
     const oficinas = await Oficina.find(query)
-      .populate('reunion')
+      .populate('reunionesActivas')
       .populate('historialDeReuniones');
 
     res.status(200).json({
@@ -134,7 +134,7 @@ const eliminarOficina = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const oficina = await Oficina.findById(id);
+    const oficina = await Oficina.findByIdAndDelete(id);
     if (!oficina) {
       res.status(404).json({
         status: 404,
@@ -142,8 +142,6 @@ const eliminarOficina = async (req, res = response) => {
       });
       return;
     }
-
-    await Oficina.deleteOne({ id });
 
     res.status(200).json({
       status: 200,

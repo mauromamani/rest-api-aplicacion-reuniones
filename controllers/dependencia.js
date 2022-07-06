@@ -89,7 +89,7 @@ const eliminarDependencia = async (req, res = response) => {
   const { id } = req.params;
 
   try {
-    const dependencia = await Dependencia.findById(id);
+    const dependencia = await Dependencia.findByIdAndDelete(id);
     if (!dependencia) {
       res.status(404).json({
         status: 404,
@@ -97,8 +97,6 @@ const eliminarDependencia = async (req, res = response) => {
       });
       return;
     }
-
-    await Dependencia.deleteOne({ id });
 
     res.status(200).json({
       status: 200,
