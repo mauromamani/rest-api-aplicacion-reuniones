@@ -5,6 +5,7 @@ const {
   modificarEmpleado,
   eliminarEmpleado,
   obtenerEmpleadoPorId,
+  obtenerEmpleadosLibres,
 } = require('../controllers/empleados');
 const {
   verificarAutenticacion,
@@ -15,6 +16,7 @@ const router = Router();
 
 router.post('/', [verificarAutenticacion, verificarPermisos], crearEmpleado);
 router.get('/', [verificarAutenticacion], obtenerEmpleados);
+router.get('/libres', [verificarAutenticacion], obtenerEmpleadosLibres);
 router.get('/:id', [verificarAutenticacion], obtenerEmpleadoPorId);
 router.put(
   '/:id',

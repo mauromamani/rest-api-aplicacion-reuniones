@@ -207,10 +207,81 @@ const eliminarEmpleado = async (req, res = response) => {
   }
 };
 
+/**
+ * @method GET
+ * @name obtenerEmpleadosLibres
+ * @query { horaInicio:Date,
+ *  horaFinal:Date}
+ */
+const obtenerEmpleadosLibres = async (req, res = response) => {
+  let empleadosOcupados = [];
+  let {
+    horaInicio,
+    horaFinal,
+  } = req.query;
+  let query = {};
+  if (horaInicio && horaFinal) {
+    query.horaInicio = { $gte: horaInicio };
+    query.horaFinal = { $lt: horaFinal };
+  } else {
+    return res.status(500).json({
+      status: 500,
+      message: 'no se envió fecha de Inicio o Fecha Final',
+    });
+  }
+  // verificar que la hora de inicio no sea mayor a hora de final
+  if (horaInicio > horaFinal) {
+    return res.status(500).json({
+      status: 500,
+      message: 'la hora de inicio no puede ser mayor a la hora de final',
+    });
+    return;
+  }
+  try {
+    let reuniones = await Reunion.find()
+      .populate('participantes');
+    let reunionesHorario = []
+    reuniones.forEach(r => {
+      console.log()
+      if (Date.parse(r.horaInicio) >= Date.parse(horaInicio) && Date.parse(r.horaFinal) <= Date.parse(horaFinal)) {
+        reunionesHorario.push(r)
+      }
+    })
+    //console.log(reuniones[0])
+    let empleadosLibres = await Empleado.find().populate('dependencias');
+    reunionesHorario.forEach(r => {
+      r.participantes.forEach(e => {
+        empleadosOcupados.push(e);
+      })
+    })
+    empleadosOcupados.forEach(e => {
+      for (let index in empleadosLibres) {
+        if (empleadosLibres[index].email == e.email) {
+          empleadosLibres.splice(index, 1);
+        }
+      }
+    })
+
+    res.status(200).json({
+      status: 200,
+      data: { empleadosLibres },
+
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      message: 'internal server error',
+    });
+  }
+
+}
+
 module.exports = {
   crearEmpleado,
   obtenerEmpleados,
   obtenerEmpleadoPorId,
   modificarEmpleado,
   eliminarEmpleado,
+  obtenerEmpleadosLibres,
 };
