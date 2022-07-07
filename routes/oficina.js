@@ -5,6 +5,7 @@ const {
   obtenerOficinas,
   eliminarOficina,
   obtenerEstadisticasOficinas,
+  obtenerOficinasLibres,
 } = require('../controllers/oficina');
 const {
   verificarAutenticacion,
@@ -14,6 +15,7 @@ const router = Router();
 
 router.post('/', [verificarAutenticacion, verificarPermisos], crearOficina);
 router.get('/', obtenerOficinas);
+router.get('/libres', obtenerOficinasLibres);
 router.get('/estadisticas/', obtenerEstadisticasOficinas);
 router.put(
   '/:id',

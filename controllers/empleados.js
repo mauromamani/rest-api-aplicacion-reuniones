@@ -220,15 +220,15 @@ const obtenerEmpleadosLibres = async (req, res = response) => {
     horaFinal,
   } = req.query;
   let query = {};
-  if (horaInicio && horaFinal) {
-    query.horaInicio = { $gte: horaInicio };
-    query.horaFinal = { $lt: horaFinal };
-  } else {
-    return res.status(500).json({
-      status: 500,
-      message: 'no se envió fecha de Inicio o Fecha Final',
-    });
-  }
+  // if (horaInicio && horaFinal) {
+  //   query.horaInicio = { $gte: horaInicio };
+  //   query.horaFinal = { $lt: horaFinal };
+  // } else {
+  //   return res.status(500).json({
+  //     status: 500,
+  //     message: 'no se envió fecha de Inicio o Fecha Final',
+  //   });
+  // }
   // verificar que la hora de inicio no sea mayor a hora de final
   if (horaInicio > horaFinal) {
     return res.status(500).json({
