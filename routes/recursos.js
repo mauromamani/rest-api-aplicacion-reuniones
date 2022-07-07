@@ -4,6 +4,7 @@ const {
   obtenerRecursos,
   modificarRecurso,
   eliminarRecurso,
+  obtenerRecursosLibres,
 } = require('../controllers/recursos');
 const {
   verificarAutenticacion,
@@ -14,6 +15,7 @@ const router = Router();
 
 router.post('/', [verificarAutenticacion, verificarPermisos], crearRecurso);
 router.get('/', obtenerRecursos);
+router.get('/libres', obtenerRecursosLibres);
 router.put(
   '/:id',
   [verificarAutenticacion, verificarPermisos],

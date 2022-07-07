@@ -137,7 +137,9 @@ const crearReunion = async (req, res = response) => {
       reunionQueColisiona = await Reunion.findByIdAndUpdate(
         reunionQueColisiona._id,
         { estado: estadoSuspendida._id }
-      );
+      ).populate('tipoReunion')
+        .populate('oficina')
+        .populate('prioridad');
 
       oficina.reunionesActivas.push(nuevaReunion._id);
       // eliminamos a la reunion para reprogramar de reunionesActivas
@@ -152,6 +154,13 @@ const crearReunion = async (req, res = response) => {
 
       // ENVIAR MENSAJE DE REPROGRAMACION
 
+      //acá va mandar el correo a la reunion que fue pisada
+      let emails = [];
+      reunionQueColisiona.participantes.forEach((empleado) => {
+        emails.push(empleado.email);
+      });
+      //cambiar funcion por otra
+      emailer.sendEmailReprogramed(emails, reunionQueColisiona);
       return res.status(200).json({
         status: 200,
         message:
@@ -467,7 +476,9 @@ const modificarReunion = async (req, res = response) => {
       reunionQueColisiona = await Reunion.findByIdAndUpdate(
         reunionQueColisiona._id,
         { estado: estadoSuspendida._id }
-      );
+      ).populate('tipoReunion')
+        .populate('oficina')
+        .populate('prioridad');;
 
       oficina.reunionesActivas.push(reunion._id);
       // eliminamos a la reunion para reprogramar de reunionesActivas
@@ -481,7 +492,12 @@ const modificarReunion = async (req, res = response) => {
       await reunion.save();
 
       // ENVIAR MENSAJE DE REPROGRAMACION
-
+      let emails = [];
+      reunionQueColisiona.participantes.forEach((empleado) => {
+        emails.push(empleado.email);
+      });
+      //cambiar funcion por otra
+      emailer.sendEmailReprogramed(emails, reunionQueColisiona);
       return res.status(200).json({
         status: 200,
         message:
