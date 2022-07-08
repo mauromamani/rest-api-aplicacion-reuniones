@@ -598,6 +598,7 @@ const confirmarReunion = async (req, res = response) => {
 
     const reunion = await Reunion.findByIdAndUpdate(id, {
       reunionConfirmada: true,
+      //cargar en la bd estado "En Proceso"
       estado: estadoEnProceso._id,
     })
       .populate('tipoReunion')
