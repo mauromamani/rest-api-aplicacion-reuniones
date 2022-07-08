@@ -139,7 +139,8 @@ const crearReunion = async (req, res = response) => {
         { estado: estadoSuspendida._id }
       ).populate('tipoReunion')
         .populate('oficina')
-        .populate('prioridad');
+        .populate('prioridad')
+        .populate('participantes');
 
       oficina.reunionesActivas.push(nuevaReunion._id);
       // eliminamos a la reunion para reprogramar de reunionesActivas
@@ -439,7 +440,8 @@ const modificarReunion = async (req, res = response) => {
       reunionQueColisiona = await Reunion.findById(reunionQueColisiona._id)
         .populate('tipoReunion')
         .populate('estado')
-        .populate('prioridad');
+        .populate('prioridad')
+        .populate('participantes');
 
       return res.status(400).json({
         status: 400,
@@ -478,7 +480,8 @@ const modificarReunion = async (req, res = response) => {
         { estado: estadoSuspendida._id }
       ).populate('tipoReunion')
         .populate('oficina')
-        .populate('prioridad');;
+        .populate('prioridad')
+        .populate('participantes');
 
       oficina.reunionesActivas.push(reunion._id);
       // eliminamos a la reunion para reprogramar de reunionesActivas
